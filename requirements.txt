@@ -3,3 +3,5 @@ torch==2.8.0
 pdfplumber==0.9.0
 streamlit==1.48.0
 nltk==3.9.1
+# For deployment compatibility
+protobuf<5.0.0

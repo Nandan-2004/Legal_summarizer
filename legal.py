@@ -5,16 +5,37 @@ import tempfile
 import re
 import os
 import nltk
-nltk.download('punkt')
+import ssl
+
+# Handle NLTK download for deployment
+try:
+    _create_unverified_https_context = ssl._create_unverified_context
+except AttributeError:
+    pass
+else:
+    ssl._create_default_https_context = _create_unverified_https_context
+
+try:
+    nltk.data.find('tokenizers/punkt')
+except LookupError:
+    nltk.download('punkt', quiet=True)
+
 from nltk.tokenize import sent_tokenize
 
 # Load pretrained FLAN-T5 model and tokenizer
 @st.cache_resource
 def load_model():
-    model_name = "google/flan-t5-large"
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
-    model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
-    return tokenizer, model
+    # Use smaller model for deployment to avoid memory issues
+    model_name = "google/flan-t5-small"  # Much smaller: ~80MB vs 3GB
+    # Alternative: "google/flan-t5-base" (~250MB) for better quality
+    
+    try:
+        tokenizer = AutoTokenizer.from_pretrained(model_name)
+        model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
+        return tokenizer, model
+    except Exception as e:
+        st.error(f"Error loading model: {e}")
+        st.stop()
 
 tokenizer, model = load_model()
 
@@ -92,6 +113,10 @@ def main():
         page_icon="⚖️",
         layout="centered"
     )
+    
+    # Add deployment info
+    if not os.path.exists('.venv'):  # Check if running on deployment
+        st.info("🚀 Running on Streamlit Cloud - Using optimized model for faster processing")
 
     # Sidebar with options
     with st.sidebar:
