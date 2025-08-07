@@ -69,7 +69,7 @@ streamlit run legal.py
 
 ## Model Information
 
-This application uses Google's FLAN-T5-large model, which will be automatically downloaded on first use (approximately 3GB). This provides the highest quality legal document summarization.
+This application uses Google's FLAN-T5-base model (~250MB) for a balance of quality and deployment performance. It will be automatically downloaded on first use.
 
 ## License
 
