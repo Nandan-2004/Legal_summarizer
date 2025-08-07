@@ -26,7 +26,7 @@ from nltk.tokenize import sent_tokenize
 @st.cache_resource
 def load_model():
     # Use smaller model for deployment to avoid memory issues
-    model_name = "google/flan-t5-small"  # Much smaller: ~80MB vs 3GB
+    model_name = "google/flan-t5-base"  # Much smaller: ~80MB vs 3GB
     # Alternative: "google/flan-t5-base" (~250MB) for better quality
     
     try:
