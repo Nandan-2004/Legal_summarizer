@@ -48,3 +48,6 @@ Thumbs.db
 
 # Model cache
 transformers_cache/
+
+# NLTK data (will be downloaded automatically)
+nltk_data/

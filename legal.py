@@ -5,7 +5,18 @@ import tempfile
 import re
 import os
 import nltk
-nltk.download('punkt')
+
+# Add local nltk data path
+current_dir = os.path.dirname(os.path.abspath(__file__))
+nltk_data_path = os.path.join(current_dir, 'nltk_data')
+nltk.data.path.append(nltk_data_path)
+
+# Try to use local data first, download if needed
+try:
+    nltk.data.find('tokenizers/punkt')
+except LookupError:
+    nltk.download('punkt', download_dir=nltk_data_path)
+
 from nltk.tokenize import sent_tokenize
 
 # Load pretrained FLAN-T5 model and tokenizer
@@ -86,14 +97,12 @@ def post_process_summary(summaries):
     return "\n\n".join(structured_summary)
 
 def main():
-    # Set page config
     st.set_page_config(
         page_title="Automated Legal Document Summarizer",
         page_icon="⚖️",
         layout="centered"
     )
 
-    # Sidebar with options
     with st.sidebar:
         st.title("⚙️ Settings")
         max_tokens = st.slider(
@@ -112,7 +121,6 @@ def main():
         st.markdown("**About this tool:**")
         st.markdown("This AI-powered summarizer specializes in legal documents, extracting key facts, judgments, and legal reasoning.")
 
-    # Main content
     st.title("⚖️ Automated Legal Document Summarizer")
     st.markdown("Upload a legal document to receive an AI-powered summary with:")
     st.markdown("- Key legal facts")
@@ -127,7 +135,6 @@ def main():
     )
 
     if uploaded_file is not None:
-        # Document processing
         with st.expander("Document Processing", expanded=True):
             with st.spinner("Extracting text from PDF..."):
                 with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_file:
@@ -135,7 +142,7 @@ def main():
                     tmp_path = tmp_file.name
                 full_text = extract_text_from_pdf(tmp_path)
                 st.success(f"Text extracted ({len(full_text)} characters)")
-                
+
                 if st.checkbox("Show sample of extracted text"):
                     st.text_area(
                         "Extracted Text Sample", 
@@ -144,16 +151,14 @@ def main():
                         label_visibility="collapsed"
                     )
 
-        # Summary generation
         with st.spinner("Generating legal summary..."):
             chunks = sentence_chunking(full_text, max_tokens=max_tokens)
             summaries = summarize_chunks_enhanced(chunks)
             final_summary = post_process_summary(summaries)
-        
+
         st.success("Summary generated successfully!")
         st.markdown("---")
 
-        # Results display
         st.subheader("📜 Legal Summary")
         st.text_area(
             "Summary Content",
@@ -162,14 +167,12 @@ def main():
             label_visibility="collapsed"
         )
 
-        # Metrics
         col1, col2 = st.columns(2)
         with col1:
             st.metric("Document Chunks Processed", len(chunks))
         with col2:
             st.metric("Summary Length", f"{len(final_summary.split())} words")
 
-        # Download button
         st.download_button(
             "💾 Download Summary",
             data=final_summary,
@@ -178,7 +181,6 @@ def main():
             help="Save the summary to your device"
         )
 
-        # Clean up
         os.unlink(tmp_path)
 
 if __name__ == "__main__":
